@@ -1,1 +1,0 @@
-/usr/bin/c++    -rdynamic CMakeFiles/cli.dir/main.o CMakeFiles/cli.dir/t_connect.o  -o cli 
