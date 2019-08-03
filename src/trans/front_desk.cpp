@@ -15,6 +15,8 @@
 
 #include "front_desk.h"
 
+#define log printf
+
 class reception
 {
 public:
@@ -155,12 +157,62 @@ int reception::processEvent(int fd, int event)
 int reception::processMsg(int fd)
 {
 
+    static char szBuf[64];
+    static char szPage[TOMATO_PAGE_SIZE];
+    ssize_t lLen = 0;
+    int iFlag = 0;
+
+    lLen = recv(fd, szBuf, sizeof(int));
+    if ((size_t)lLen != sizeof(int))
+    {
+        log("recv len:%ld error\n", lLen);
+        goto err;
+    }
+
+    iFlag = *(int *)(char *)szBuf;
+
+    switch(iFlag)
+    {
+        case TRANS_WRITE:
+        {
+            lLen = recv(fd, szPage, TOMATO_PAGE_SIZE, MSG_WAITALL);
+            if (TOMATO_PAGE_SIZE != lLen)
+            {
+                log("recv error lLen:%ld\n", lLen);
+            }
+
+            lLen = send(fd, szPage, TOMATO_PAGE_SIZE,0);
+            if (TOMATO_PAGE_SIZE != lLen)
+            {
+                log("recv error lLen:%ld\n", lLen);
+            }
+
+            break;
+        }
+        case TRANS_READ:
+        {
+            lLen = send(fd, szPage, TOMATO_PAGE_SIZE,0);
+            if (TOMATO_PAGE_SIZE != lLen)
+            {
+                log("send error lLen:%ld\n", lLen);
+            }
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+
+
+err:
+
+end:
 
     return 0;
 }
 
 /*============================================================*/
-
 
 
 int front_desk::start()
@@ -179,6 +231,7 @@ void *front_desk::run(void *pData)
     int acceptFd = -1;
     struct epoll_event event;
     struct epoll_event astEvent[1];
+    struct sockeaddr_in stAddr;
     int iNum = 0;
 
 
@@ -190,6 +243,16 @@ void *front_desk::run(void *pData)
 
     listenFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (-1 == listenFd)
+    {
+        goto end;
+    }
+
+    bzero(&stAddr, sizeof(struct sockaddr_in));
+    stAddr.sin_family = AF_INET;
+    stAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    stAddr.sin_port = htonl(FRONT_PORT);
+    iRet = bind(listenFd, (strcut sockaddr*)stAddr, sizeof(stAddr));
+    if (0 != iRet)
     {
         goto end;
     }

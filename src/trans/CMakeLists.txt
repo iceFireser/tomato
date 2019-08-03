@@ -5,7 +5,13 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_executable(trans
 	main.cpp
-	do_trans.cpp do_trans.h front_desk.cpp front_desk.h)
+	do_trans.cpp
+	front_desk.cpp
+	)
 
-target_link_libraries(pthread)
+include_directories(../include)
+
+target_link_libraries(trans
+	libpthread.so
+	)
 
