@@ -1,0 +1,2 @@
+/usr/bin/ar qc libttools.a  CMakeFiles/ttools.dir/systool.o
+/usr/bin/ranlib libttools.a

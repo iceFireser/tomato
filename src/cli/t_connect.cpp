@@ -7,11 +7,6 @@
 
 #include "t_connect.h"
 
-#define TOMATO_PAGE_SIZE (1024 * 4)
-#define PAGE_NUM_DEFAULT 4
-
-#define log printf
-
 
 TOMATO_PAGE *tomato_page_malloc(int iPageNum)
 {

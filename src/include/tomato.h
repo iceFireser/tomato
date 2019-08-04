@@ -1,6 +1,11 @@
 #ifndef __TOMATO_H__
 #define __TOMATO_H__
 
+#define TOMATO_PAGE_SIZE (1024 * 4)
+#define PAGE_NUM_DEFAULT 4
+
+#define log printf
+
 
 typedef struct tag_tomato_page
 {
