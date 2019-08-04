@@ -2,16 +2,22 @@
 // Created by hzl on 19-6-2.
 //
 
+#include <stdio.h>
 #include <unistd.h>
-
+#include <string.h>
 #include <pthread.h>
 
 #include <sys/epoll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
+
 #include <new>
 
+
+
+#include <tomato.h>
 
 #include "front_desk.h"
 
@@ -162,7 +168,7 @@ int reception::processMsg(int fd)
     ssize_t lLen = 0;
     int iFlag = 0;
 
-    lLen = recv(fd, szBuf, sizeof(int));
+    lLen = recv(fd, szBuf, sizeof(int), MSG_WAITALL);
     if ((size_t)lLen != sizeof(int))
     {
         log("recv len:%ld error\n", lLen);
@@ -231,7 +237,7 @@ void *front_desk::run(void *pData)
     int acceptFd = -1;
     struct epoll_event event;
     struct epoll_event astEvent[1];
-    struct sockeaddr_in stAddr;
+    struct sockaddr_in stAddr;
     int iNum = 0;
 
 
@@ -251,7 +257,7 @@ void *front_desk::run(void *pData)
     stAddr.sin_family = AF_INET;
     stAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     stAddr.sin_port = htonl(FRONT_PORT);
-    iRet = bind(listenFd, (strcut sockaddr*)stAddr, sizeof(stAddr));
+    iRet = bind(listenFd, (struct sockaddr *)&stAddr, sizeof(stAddr));
     if (0 != iRet)
     {
         goto end;
