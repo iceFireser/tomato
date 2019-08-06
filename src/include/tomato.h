@@ -6,6 +6,8 @@
 
 #define log printf
 
+#define FRONT_PORT 6072
+
 
 typedef struct tag_tomato_page
 {

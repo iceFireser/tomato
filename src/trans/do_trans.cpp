@@ -5,5 +5,6 @@
 
 int do_trans(void)
 {
+
 	return 0;
 }

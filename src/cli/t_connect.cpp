@@ -13,6 +13,7 @@ TOMATO_PAGE *tomato_page_malloc(int iPageNum)
     int iRet = -1;
     TOMATO_PAGE *pPage = NULL;
     char *pcData = NULL;
+    struct tag_tomaoto_address *pstAdd = NULL;
 
     pPage = (TOMATO_PAGE *)malloc(sizeof(TOMATO_PAGE));
     if (!pPage)
@@ -26,8 +27,17 @@ TOMATO_PAGE *tomato_page_malloc(int iPageNum)
         goto err;
     }
 
+    pstAdd = (struct tag_tomaoto_address *)malloc(sizeof(struct tag_tomaoto_address));
+    if (NULL == pstAdd)
+    {
+        goto err;
+    }
+
+    bzero(pstAdd, sizeof(struct tag_tomaoto_address));
+
+
     bzero(pPage, sizeof(TOMATO_PAGE));
-    pPage->pstAddress = NULL;
+    pPage->pstAddress = pstAdd;
     pPage->ulfreeLen = TOMATO_PAGE_SIZE;
     pPage->ulTotalLen = TOMATO_PAGE_SIZE;
     pPage->ulUseLen = 0;
@@ -44,6 +54,11 @@ err:
     }
 
 
+    if (pstAdd)
+    {
+        free(pstAdd);
+        pstAdd = NULL;
+    }
 
 end:
     return pPage;
@@ -57,10 +72,17 @@ unsigned long tomato_page_size()
 int tomato_page_free(TOMATO_PAGE *pPage)
 {
     bzero(PAGA_DATA(pPage), pPage->ulTotalLen);
-    bzero(PAGE_ADDRESS(pPage), sizeof(struct tag_tomaoto_address));
+    if (pPage->pstAddress)
+    {
+        bzero(pPage->pstAddress, sizeof(struct tag_tomaoto_address));
+        free(pPage->pstAddress);
+    }
 
-    free(PAGA_DATA(pPage));
-    free(PAGE_ADDRESS(pPage));
+    if (pPage->pcData)
+    {
+        bzero(pPage->pcData, pPage->ulTotalLen);
+        free(pPage->pcData);
+    }
 
     bzero(pPage, sizeof(TOMATO_PAGE));
     free(pPage);
@@ -131,6 +153,7 @@ TOMATO_TRANS *tomato_trans_start(in_addr_t addr)
 {
     int iRet = -1;
     TOMATO_TRANS *pstTrans = NULL;
+    struct tag_tomaoto_address *pstAdd = NULL;
     int fd = -1;
     int i;
     struct sockaddr_in stAddr;
@@ -152,7 +175,7 @@ TOMATO_TRANS *tomato_trans_start(in_addr_t addr)
     bzero(&stAddr, sizeof(struct sockaddr_in));
     stAddr.sin_family = AF_INET;
     stAddr.sin_addr.s_addr = addr;
-    stAddr.sin_port = htonl(FRONT_PORT);
+    stAddr.sin_port = htons(FRONT_PORT);
 
     iRet = connect(fd, (struct sockaddr *)&stAddr, sizeof(struct sockaddr_in));
     if (0 != iRet)
@@ -167,6 +190,16 @@ TOMATO_TRANS *tomato_trans_start(in_addr_t addr)
     pstTrans->pstAddress = NULL;
 
 
+    pstAdd = (struct tag_tomaoto_address *)malloc(sizeof(struct tag_tomaoto_address));
+    if (NULL == pstAdd)
+    {
+        goto err;
+    }
+
+    bzero(pstAdd, sizeof(struct tag_tomaoto_address));
+
+    pstTrans->pstAddress = pstAdd;
+
     goto end;
 
 
@@ -177,6 +210,12 @@ err:
         fd = 1;
     }
 
+    if (pstAdd)
+    {
+        free(pstAdd);
+        pstAdd = NULL;
+    }
+
 
     if (pstTrans)
     {
@@ -185,8 +224,12 @@ err:
             tomato_page_free(pstTrans->ppPage[i]);
         }
 
+        free(pstTrans);
+
         pstTrans = NULL;
     }
+
+
 
 end:
     return pstTrans;
@@ -319,6 +362,7 @@ int tomato_set_operator(TOMATO_TRANS *pstTrans, TOMATO_PAGE *pPage, int iNum,
 
     pstTrans->ppPage = ppPage;
     pstTrans->iFlag = iFlag;
+    pstTrans->iMaxNum = PAGE_NUM_DEFAULT;
 
     for (i = 0; (i < iNum) && (i < pstTrans->iMaxNum); i++)
     {
@@ -350,7 +394,7 @@ int tomato_commit(TOMATO_TRANS *pstTrans)
         case TRANS_WRITE:
         {
             lLen = send(pstTrans->iconnectFd, &(pstTrans->iFlag), sizeof(int), 0);
-            if (TOMATO_PAGE_SIZE != lLen)
+            if ((ssize_t)sizeof(int) != lLen)
             {
                 log("send error lLen:%ld\n", lLen);
             }
@@ -361,7 +405,7 @@ int tomato_commit(TOMATO_TRANS *pstTrans)
                 log("send error lLen:%ld\n", lLen);
             }
 
-            lLen = recv(pstTrans->iconnectFd, pstTrans->ppPage[0]->pstAddress,
+            lLen = recv(pstTrans->iconnectFd, pstTrans->pstAddress,
                         sizeof(struct tag_tomaoto_address), MSG_WAITALL);
             if ((ssize_t)sizeof(struct tag_tomaoto_address) != lLen)
             {
@@ -373,12 +417,19 @@ int tomato_commit(TOMATO_TRANS *pstTrans)
         case TRANS_READ:
         {
             lLen = send(pstTrans->iconnectFd, &(pstTrans->iFlag), sizeof(int), 0);
-            if (TOMATO_PAGE_SIZE != lLen)
+            if (sizeof(int) != lLen)
             {
                 log("send error lLen:%ld\n", lLen);
             }
 
-            lLen = recv(pstTrans->iconnectFd, pstTrans->ppPage[0], TOMATO_PAGE_SIZE,
+            lLen = send(pstTrans->iconnectFd, pstTrans->pstAddress,
+                        sizeof(struct tag_tomaoto_address), 0);
+            if ((ssize_t)sizeof(struct tag_tomaoto_address) != lLen)
+            {
+                log("send error lLen:%ld\n", lLen);
+            }
+
+            lLen = recv(pstTrans->iconnectFd, pstTrans->ppPage[0]->pcData, TOMATO_PAGE_SIZE,
                         MSG_WAITALL);
             if (TOMATO_PAGE_SIZE != lLen)
             {

@@ -108,6 +108,10 @@ int main(int argc, char *argv[])
     }
 
     pPage = tomato_page_malloc(1);
+    if (!pPage)
+    {
+        goto end;
+    }
 
 
 
@@ -131,10 +135,6 @@ int main(int argc, char *argv[])
 
 
     }
-    else
-    {
-        goto end;
-    }
 
 
     if (para.pcData)
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
     }
 
 
-    if (0 == strcmp(para.pcType, "wirte"))
+    if (0 == strcmp(para.pcType, "write"))
     {
         tomato_set_operator(pTrans, pPage, 1, TRANS_WRITE);
     }
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
 
     if (para.pcOut)
     {
-        fd = open(para.pcData, O_WRONLY | O_TRUNC | O_CREAT, 0644);
+        fd = open(para.pcOut, O_WRONLY | O_TRUNC | O_CREAT, 0644);
         if (-1 == fd)
         {
             goto end;
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
         lLen = write(fd, PAGA_DATA(pPage), tomato_page_size());
         if ((unsigned long)lLen != tomato_page_size())
         {
-            printf("read data error!\n");
+            printf("write data error!\n");
             goto end;
         }
 

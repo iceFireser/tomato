@@ -9,10 +9,6 @@
 
 
 
-#ifndef FRONT_PORT
-#define FRONT_PORT 6072
-#endif
-
 #include "tomato.h"
 
 TOMATO_PAGE *tomato_page_malloc(int iPageNum);

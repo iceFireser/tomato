@@ -140,22 +140,28 @@ void reception::run()
 
 int reception::processEvent(int fd, int event)
 {
+    int iRet = -1;
 
     if (0 != (event & EPOLLIN))
     {
-        processMsg(fd);
+        iRet = processMsg(fd);
+        if (0 != iRet)
+        {
+            log("processMsg error event:%x\n", event);
+            return -1;
+        }
 
     }
-
-
 
     if (0 != (event & (EPOLLHUP | EPOLLERR)))
     {
         epoll_ctl(m_eventFd, EPOLL_CTL_DEL, fd, NULL);
-        close(fd);
+        //close(fd);
+        log("epoll EPOLLHUP\n");
         return -1;
         /* close connect */
     }
+
 
     return 0;
 }
@@ -165,6 +171,7 @@ int reception::processMsg(int fd)
 
     static char szBuf[64];
     static char szPage[TOMATO_PAGE_SIZE];
+    static struct tag_tomaoto_address stAddress;
     ssize_t lLen = 0;
     int iFlag = 0;
 
@@ -185,22 +192,34 @@ int reception::processMsg(int fd)
             if (TOMATO_PAGE_SIZE != lLen)
             {
                 log("recv error lLen:%ld\n", lLen);
+                goto err;
             }
 
-            lLen = send(fd, szPage, TOMATO_PAGE_SIZE,0);
-            if (TOMATO_PAGE_SIZE != lLen)
+            bzero(&stAddress, sizeof(stAddress));
+            stAddress.uiId = 1;
+            lLen = send(fd, &stAddress, sizeof(stAddress),0);
+            if (sizeof(stAddress) != lLen)
             {
-                log("recv error lLen:%ld\n", lLen);
+                log("send error lLen:%ld\n", lLen);
+                goto err;
             }
 
             break;
         }
         case TRANS_READ:
         {
+            lLen = recv(fd, &stAddress, sizeof(stAddress), MSG_WAITALL);
+            if (sizeof(stAddress) != lLen)
+            {
+                log("recv error lLen:%ld\n", lLen);
+                goto err;
+            }
+
             lLen = send(fd, szPage, TOMATO_PAGE_SIZE,0);
             if (TOMATO_PAGE_SIZE != lLen)
             {
                 log("send error lLen:%ld\n", lLen);
+                goto err;
             }
             break;
         }
@@ -210,9 +229,10 @@ int reception::processMsg(int fd)
         }
     }
 
+    goto end;
 
 err:
-
+    return -1;
 end:
 
     return 0;
@@ -256,7 +276,7 @@ void *front_desk::run(void *pData)
     bzero(&stAddr, sizeof(struct sockaddr_in));
     stAddr.sin_family = AF_INET;
     stAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    stAddr.sin_port = htonl(FRONT_PORT);
+    stAddr.sin_port = htons(FRONT_PORT);
     iRet = bind(listenFd, (struct sockaddr *)&stAddr, sizeof(stAddr));
     if (0 != iRet)
     {
@@ -288,7 +308,8 @@ void *front_desk::run(void *pData)
         }
         else if (iNum < 0)
         {
-            break;
+            log("iNum:%d\n", iNum);
+            //break;
         }
     }
 
