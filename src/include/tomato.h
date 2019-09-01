@@ -4,7 +4,6 @@
 #define TOMATO_PAGE_SIZE (1024 * 4)
 #define PAGE_NUM_DEFAULT 4
 
-#define log printf
 
 #define FRONT_PORT 6072
 

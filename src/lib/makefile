@@ -1,8 +1,8 @@
 
 TARGET=libttools.a
 
-CPPSOURCE=
-CSOURCE=systool.c
+CPPSOURCE=systool.cpp log.cpp loop.cpp
+CSOURCE=
 
 all:$(TARGET)
 
@@ -22,17 +22,17 @@ CPPOBJS=$(CPPSOURCE:.cpp=.o)
 OBJS=$(COBJS) $(CPPOBJS)
 
 $(COBJS): %.o: %.c
-	gcc $(CFLAGS) -c $< -o $@	
+	gcc $(CFLAGS) -c $< -o $@
 
 $(CPPOBJS): %.o: %.cpp
-	g++ $(CPPFLAGS) -c $< -o $@	
+	g++ $(CPPFLAGS) -c $< -o $@
 
- 
+
 $(TARGET): $(OBJS)
 	 ar -rc -o $@ $(OBJS) $(LIBS)
 
 .PHONY:clean
 
-clean: 
+clean:
 	rm $(OBJS) $(TARGET)
 

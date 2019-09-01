@@ -19,6 +19,7 @@
 
 #include <tomato.h>
 
+#include "loop.h"
 #include "front_desk.h"
 
 #define log printf
@@ -248,6 +249,16 @@ int front_desk::start()
     return 0;
 }
 
+int front_desk::listenCB(int fd, int iEvent, void *pData)
+{
+    int acceptFd = -1;
+    acceptFd = accept(fd, nullptr, nullptr);
+    reception *pRe = new(std::nothrow) reception(acceptFd) ;
+    pRe->start();
+
+    return 0;
+}
+
 
 void *front_desk::run(void *pData)
 {
@@ -260,12 +271,8 @@ void *front_desk::run(void *pData)
     struct sockaddr_in stAddr;
     int iNum = 0;
 
+    loop lp;
 
-    fd = epoll_create(4);
-    if (- 1 == fd)
-    {
-        goto end;
-    }
 
     listenFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (-1 == listenFd)
@@ -289,44 +296,13 @@ void *front_desk::run(void *pData)
         goto end;
     }
 
-    event.events = EPOLLIN | EPOLLHUP | EPOLLERR;
-    event.data.fd = listenFd;
-    iRet = epoll_ctl(fd, EPOLL_CTL_ADD, listenFd, &event);
-    if (0 != iRet)
-    {
-        goto end;
-    }
+    iRet = lp.insert(listenFd, listenCB);
+    printf("lp.insert ret=%d\n", iRet);
 
-    for (;;)
-    {
-        iNum = epoll_wait(fd, astEvent, 1, -1);
-        if (iNum > 0)
-        {
-            acceptFd = accept(listenFd, nullptr, nullptr);
-            reception *pRe = new(std::nothrow) reception(acceptFd) ;
-            pRe->start();
-        }
-        else if (iNum < 0)
-        {
-            log("iNum:%d\n", iNum);
-            //break;
-        }
-    }
 
+    lp.looping();
 
 end:
-    if (-1 != fd)
-    {
-       close(fd);
-       fd = -1;
-    }
-
-    if (-1 != listenFd)
-    {
-       close(listenFd);
-       listenFd = -1;
-    }
-
 
     return nullptr;
 }

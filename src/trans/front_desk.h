@@ -14,6 +14,8 @@ public:
 private:
     void *run(void *pData);
 
+    static int listenCB(int fd, int iEvent, void *pData);
+
 };
 
 

@@ -11,7 +11,7 @@ INCFLAGS?=-I ../include
 COMFLAGS?=-g
 
 STATIC_LIBS=../lib/libttools.a
-DYNAMIC_LIBS=
+DYNAMIC_LIBS= -lpthread
 
 LIBS=$(STATIC_LIBS) $(DYNAMIC_LIBS)
 
@@ -23,17 +23,17 @@ CPPOBJS=$(CPPSOURCE:.cpp=.o)
 OBJS=$(COBJS) $(CPPOBJS)
 
 $(COBJS): %.o: %.c
-	gcc $(CFLAGS) -c $< -o $@	
+	gcc $(CFLAGS) -c $< -o $@
 
 $(CPPOBJS): %.o: %.cpp
-	g++ $(CPPFLAGS) -c $< -o $@	
+	g++ $(CPPFLAGS) -c $< -o $@
 
- 
+
 $(TARGET): $(OBJS)
 	g++ -o $@ $(OBJS) $(LIBS)
 
 .PHONY:clean
 
-clean: 
+clean:
 	rm $(OBJS) $(TARGET)
 

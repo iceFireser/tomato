@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+#include "log.h"
 #include "t_connect.h"
 
 
@@ -396,20 +396,20 @@ int tomato_commit(TOMATO_TRANS *pstTrans)
             lLen = send(pstTrans->iconnectFd, &(pstTrans->iFlag), sizeof(int), 0);
             if ((ssize_t)sizeof(int) != lLen)
             {
-                log("send error lLen:%ld\n", lLen);
+                log_error("send error lLen:%ld\n", lLen);
             }
 
             lLen = send(pstTrans->iconnectFd, pstTrans->ppPage[0]->pcData, TOMATO_PAGE_SIZE, 0);
             if (TOMATO_PAGE_SIZE != lLen)
             {
-                log("send error lLen:%ld\n", lLen);
+                log_error("send error lLen:%ld\n", lLen);
             }
 
             lLen = recv(pstTrans->iconnectFd, pstTrans->pstAddress,
                         sizeof(struct tag_tomaoto_address), MSG_WAITALL);
             if ((ssize_t)sizeof(struct tag_tomaoto_address) != lLen)
             {
-                log("recv error lLen:%ld\n", lLen);
+                log_error("recv error lLen:%ld\n", lLen);
             }
 
             break;
@@ -419,21 +419,21 @@ int tomato_commit(TOMATO_TRANS *pstTrans)
             lLen = send(pstTrans->iconnectFd, &(pstTrans->iFlag), sizeof(int), 0);
             if (sizeof(int) != lLen)
             {
-                log("send error lLen:%ld\n", lLen);
+                log_error("send error lLen:%ld\n", lLen);
             }
 
             lLen = send(pstTrans->iconnectFd, pstTrans->pstAddress,
                         sizeof(struct tag_tomaoto_address), 0);
             if ((ssize_t)sizeof(struct tag_tomaoto_address) != lLen)
             {
-                log("send error lLen:%ld\n", lLen);
+                log_error("send error lLen:%ld\n", lLen);
             }
 
             lLen = recv(pstTrans->iconnectFd, pstTrans->ppPage[0]->pcData, TOMATO_PAGE_SIZE,
                         MSG_WAITALL);
             if (TOMATO_PAGE_SIZE != lLen)
             {
-                log("recv error lLen:%ld\n", lLen);
+                log_error("recv error lLen:%ld\n", lLen);
             }
 
             break;
