@@ -908,7 +908,7 @@ void map_fini(struct map_ex *map)
     return;
 }
 
-#if 1
+#if 0
 int main()
 {
     struct map_ex *map = map_init(0, 0);
