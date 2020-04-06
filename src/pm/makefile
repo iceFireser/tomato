@@ -1,8 +1,8 @@
 
 TARGET=pm
 
-CPPSOURCE=main.c
-CSOURCE=
+CPPSOURCE=
+CSOURCE=main.c
 
 all:$(TARGET)
 

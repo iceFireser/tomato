@@ -1,8 +1,9 @@
 
 TARGET=cli
 
-CPPSOURCE=main.c
-CSOURCE=
+CPPSOURCE=
+CSOURCE=main.c
+
 
 all:$(TARGET)
 
