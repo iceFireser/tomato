@@ -1,5 +1,5 @@
 
-SUB_DIRS=lib pm store trans cli
+SUB_DIRS=lib pm tomatod cli
 
 all:
 	for dir in $(SUB_DIRS); do \

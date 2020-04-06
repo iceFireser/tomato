@@ -1,14 +1,14 @@
 
-TARGET=cli
+TARGET=tomatod
 
-CPPSOURCE=main.c
-CSOURCE=
+CSOURCE=main.c do_trans.c front_desk.c
 
-all:$(TARGET)
+CPPSOURCE=
 
 
 INCFLAGS?=-I ../include -I../
-COMFLAGS?=-g
+COMFLAGS?=-g -Wall -Werror
+
 
 STATIC_LIBS=../lib/libtomato.a
 DYNAMIC_LIBS= -lpthread
@@ -21,6 +21,8 @@ CFLAGS+=$(INCFLAGS) $(COMFLAGS)
 COBJS=$(CSOURCE:.c=.o)
 CPPOBJS=$(CPPSOURCE:.cpp=.o)
 OBJS=$(COBJS) $(CPPOBJS)
+
+all:$(TARGET)
 
 $(COBJS): %.o: %.c
 	gcc $(CFLAGS) -c $< -o $@

@@ -1,21 +1,24 @@
 
-TARGET=libttools.a
+TARGET=libtomato.a
 
-CPPSOURCE=systool.cpp log.cpp loop.cpp
-CSOURCE=
+CSOURCE=string_ex.c error_ex.c map_ex.c queue_ex.c systool.c loop.c log.c json.c  threadm.c \
+	sha1.c tcps.c
+
+CPPSOURCE=
 
 all:$(TARGET)
 
 
 INCFLAGS?=-I ../include
+COMFLAG=-g -Wall -Werror
 
 STATIC_LIBS=
 DYNAMIC_LIBS=
 
 LIBS=$(STATIC_LIBS) $(DYNAMIC_LIBS)
 
-CPPFLAGS+=$(INCFLAGS)
-CFLAGS+=$(INCFLAGS)
+CPPFLAGS+=$(INCFLAGS) $(COMFLAG)
+CFLAGS+=$(INCFLAGS) $(COMFLAG)
 
 COBJS=$(CSOURCE:.c=.o)
 CPPOBJS=$(CPPSOURCE:.cpp=.o)
@@ -34,5 +37,5 @@ $(TARGET): $(OBJS)
 .PHONY:clean
 
 clean:
-	rm $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET)
 

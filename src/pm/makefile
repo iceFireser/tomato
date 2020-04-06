@@ -1,13 +1,13 @@
 
 TARGET=pm
 
-CPPSOURCE=main.cpp 
+CPPSOURCE=main.c
 CSOURCE=
 
 all:$(TARGET)
 
 
-INCFLAGS?=-I ../include
+INCFLAGS?=-I ../include -I../
 
 STATIC_LIBS=
 DYNAMIC_LIBS=
@@ -25,17 +25,17 @@ OBJS=$(COBJS) $(CPPOBJS)
 all:$(TARGET)
 
 $(COBJS): %.o: %.c
-	gcc $(CFLAGS) -c $< -o $@	
+	gcc $(CFLAGS) -c $< -o $@
 
 $(CPPOBJS): %.o: %.cpp
-	g++ $(CPPFLAGS) -c $< -o $@	
+	g++ $(CPPFLAGS) -c $< -o $@
 
- 
+
 $(TARGET): $(OBJS)
 	g++ -o $@ $(OBJS) $(LIBS)
 
 .PHONY:clean
 
-clean: 
-	rm $(OBJS) $(TARGET)
+clean:
+	rm -f $(OBJS) $(TARGET)
 
