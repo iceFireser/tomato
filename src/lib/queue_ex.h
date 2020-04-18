@@ -1,14 +1,34 @@
 #ifndef __QUEUE_EX_H__
 #define __QUEUE_EX_H__
 
+struct queue_node
+{
+    struct queue_node *pre;
+    struct queue_node *next;
+
+    void *value;
+
+
+};
+
+typedef void (*QUEUE_CLEAR_PF)(void *value);
+
 struct queue_ex
 {
-    void *tree;
+    struct queue_node *first;
+    struct queue_node *last;
+
+    int num;
+
+    QUEUE_CLEAR_PF clear;
+
+    struct queue_curse **arr;
+    int arr_num;
 };
 
 struct queue_curse
 {
-    void *private;
+    unsigned long index;
     void *value;
 };
 

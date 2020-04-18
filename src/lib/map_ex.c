@@ -786,7 +786,7 @@ struct map_curse *map_begin(struct map_ex *map)
     bzero(node_arr, sizeof(struct avl_tree_node *) * (map->tree->num + 1));
     bzero(curse_arr, sizeof(struct map_curse *) * (map->tree->num + 1));
 
-    tree_travel(map->tree, node_arr, ARR_SIZE(node_arr));
+    tree_travel(map->tree, node_arr, map->tree->num + 1);
 
 
     if (map->node_arr)
