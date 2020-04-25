@@ -3,6 +3,10 @@
 
 #include <lib/error_ex.h>
 #include <lib/string_ex.h>
+
+#include <lib/queue_ex.h>
+#include <lib/map_ex.h>
+
 #include <lib/systool.h>
 #include <lib/threadm.h>
 #include <lib/loop.h>

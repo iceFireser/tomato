@@ -358,7 +358,7 @@ int loop_running(struct loop * lp)
                 curse = map_find(lp->m_hashmap, (void *)(long)iTmpFd);
                 if (curse)
                 {
-                    pcb = (EVENTCB_P)curse->value;
+                    pcb = (EVENTCB_P)curse;
                 }
                 pthread_mutex_unlock(&lp->m_lock);
 

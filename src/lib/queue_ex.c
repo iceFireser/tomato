@@ -50,6 +50,7 @@ int queue_push(struct queue_ex *queue, void *value)
         node->pre = queue->last;
 
         queue->last->next = node;
+        queue->last = node;
 
         queue->num++;
     }
@@ -120,8 +121,8 @@ struct queue_curse *queue_begin(struct queue_ex *queue)
 {
     struct queue_node *node = NULL;
     int i;
-    unsigned long len = sizeof(struct queue_curse *) * (queue->num + 1);
-    struct queue_curse **arr = (struct queue_curse **)malloc(len);
+    unsigned long len = sizeof(struct queue_curse) * (queue->num + 1);
+    struct queue_curse *arr = (struct queue_curse *)malloc(len);
     if (!arr)
         return NULL;
 
@@ -129,8 +130,8 @@ struct queue_curse *queue_begin(struct queue_ex *queue)
 
     for (i = 0, node = queue->first; node && (i < len); node = node->next, i++)
     {
-        arr[i]->value = node->value;
-        arr[i]->index = i;
+        arr[i].value = node->value;
+        arr[i].index = i;
     }
 
     if (queue->arr)
@@ -140,35 +141,35 @@ struct queue_curse *queue_begin(struct queue_ex *queue)
     }
 
     queue->arr = arr;
-    queue->arr_num = queue->num + 1;
+    queue->arr_num = queue->num;
 
-    return NULL;
+    return &queue->arr[0];
 }
 struct queue_curse *queue_end(struct queue_ex *queue)
 {
-    if ((!queue) || (queue->num))
+    if ((!queue) || (!queue->arr_num))
         return NULL;
 
-    return queue->arr[queue->num + 1];
+    return &queue->arr[queue->arr_num];
 }
 struct queue_curse *queue_next(struct queue_ex *queue, struct queue_curse *curse)
 {
-     if ((!queue) || (queue->num))
+     if ((!queue) || (!queue->arr_num))
         return NULL;
 
-    if ( (curse->index - 1) < queue->arr_num)
-        return queue->arr[curse->index + 1];
+    if ( (curse->index) <= queue->arr_num)
+        return &queue->arr[curse->index + 1];
 
     return NULL;
 }
 struct queue_curse *queue_pre(struct queue_ex *queue, struct queue_curse *curse)
 {
-     if ((!queue) || (queue->num))
+     if ((!queue) || (!queue->arr_num))
         return NULL;
 
-    if ( (curse->index - 1) >=0 )
+    if ( (curse->index - 1) >= 0 )
     {
-        return queue->arr[curse->index - 1];
+        return &queue->arr[curse->index - 1];
     }
 
     return NULL;
@@ -220,4 +221,44 @@ void queue_fini(struct queue_ex *queue)
 }
 
 
+#if 0
+
+int main(int argc, char *argv[])
+{
+    int arr[] = {1,2,3,4,5,6,7};
+    int ret, i, j;
+
+    struct queue_ex * q = queue_init();
+    if (!q)
+    {
+        printf("queue init null\n");
+    }
+
+    for (i = 0; i < 7; i++)
+    {
+        ret = queue_push(q, (void *)(long)arr[i]);
+        if (ret)
+        {
+            printf("num:%d ret:%d\n", i, ret);
+            break;
+        }
+
+    }
+
+    struct queue_curse *c;
+
+    for (c = queue_begin(q); c != queue_end(q); c = queue_next(q, c))
+    {
+
+        printf("%d ", (int)(long)c->value);
+    }
+
+
+    queue_fini(q);
+
+    return 0;
+}
+
+
+#endif
 

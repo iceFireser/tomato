@@ -22,7 +22,7 @@ struct queue_ex
 
     QUEUE_CLEAR_PF clear;
 
-    struct queue_curse **arr;
+    struct queue_curse *arr;
     int arr_num;
 };
 

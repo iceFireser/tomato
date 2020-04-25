@@ -33,7 +33,7 @@ struct map_ex
     struct avl_tree *tree;
     struct avl_tree_node **node_arr;
     int node_arr_num;
-    struct map_curse **curse_arr;
+    struct map_curse *curse_arr;
     int curse_arr_num;
 };
 
@@ -778,13 +778,13 @@ struct map_curse *map_begin(struct map_ex *map)
 {
     int i;
     struct avl_tree_node **node_arr = malloc(sizeof(struct avl_tree_node *) * (map->tree->num + 1) );
-    struct map_curse **curse_arr = malloc(sizeof(struct map_curse *) * (map->tree->num + 1) );
+    struct map_curse *curse_arr = malloc(sizeof(struct map_curse ) * (map->tree->num + 1) );
 
     if ((!node_arr) || (!curse_arr) )
         goto err;
 
     bzero(node_arr, sizeof(struct avl_tree_node *) * (map->tree->num + 1));
-    bzero(curse_arr, sizeof(struct map_curse *) * (map->tree->num + 1));
+    bzero(curse_arr, sizeof(struct map_curse) * (map->tree->num + 1));
 
     tree_travel(map->tree, node_arr, map->tree->num + 1);
 
@@ -792,25 +792,27 @@ struct map_curse *map_begin(struct map_ex *map)
     if (map->node_arr)
     {
         free(map->node_arr);
-        map->node_arr = node_arr;
-        map->node_arr_num = map->tree->num;
     }
+
+    map->node_arr = node_arr;
+    map->node_arr_num = map->tree->num;
 
     if (map->curse_arr)
     {
         free(map->curse_arr);
-        map->curse_arr = curse_arr;
-        map->curse_arr_num = map->tree->num;
     }
+
+    map->curse_arr = curse_arr;
+    map->curse_arr_num = map->tree->num;
 
     for (i = 0; i < map->tree->num; i++)
     {
-        curse_arr[i]->key = node_arr[i]->key;
-        curse_arr[i]->value = node_arr[i]->value;
-        curse_arr[i]->index = i;
+        curse_arr[i].key = node_arr[i]->key;
+        curse_arr[i].value = node_arr[i]->value;
+        curse_arr[i].index = i;
     }
 
-    return curse_arr[0];
+    return &curse_arr[0];
 
 err:
     if (node_arr)
@@ -826,7 +828,7 @@ struct map_curse *map_end(struct map_ex *map)
 
     if (map->curse_arr)
     {
-        return map->curse_arr[map->curse_arr_num];
+        return &map->curse_arr[map->curse_arr_num];
     }
 
     return NULL;
@@ -837,7 +839,7 @@ struct map_curse *map_next(struct map_ex *map, struct map_curse *curse)
     {
         if ( (map->curse_arr) && (curse->index + 1) <= map->curse_arr_num )
         {
-            return map->curse_arr[curse->index + 1];
+            return &map->curse_arr[curse->index + 1];
         }
     }
 
@@ -851,7 +853,7 @@ struct map_curse *map_pre(struct map_ex *map, struct map_curse *curse)
     {
         if ( (map->curse_arr) && (curse->index - 1) >= 0 )
         {
-            return map->curse_arr[curse->index - 1];
+            return &map->curse_arr[curse->index - 1];
         }
     }
 
@@ -922,10 +924,20 @@ int main()
         map_insert(map, (void *)key, NULL);
     }
 
+#if 0
     key=1;
     map_erase(map, (void *)key);
+#endif
 
-    map_print(map);
+    struct map_curse *c;
+
+    for (c = map_begin(map); c != map_end(map); c = map_next(map, c))
+    {
+        printf(" %ld ", (long)c->key);
+
+    }
+
+    //map_print(map);
 
     return 0;
 };
